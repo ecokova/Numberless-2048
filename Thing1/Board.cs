@@ -6,12 +6,19 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
+
 namespace Thing1
 {
     public class Board
     {
+        // NEEDSWORK: Should Tile be its own class? Is there enough to it to warrant that?
+        const int NUM_ROWS = 4;
+        const int NUM_COLS = 4;
+        const int TILE_SPEED = 5;
+
         private Texture2D imgBoard;
         private Texture2D imgTile;
+        private Random random;
 
         private struct Tile
         {
@@ -51,25 +58,30 @@ namespace Thing1
         // Constructor / implicit "Initialize" method
         public Board()
         {
+            // NEEDSWORK: Is it confusing that there is no Initialize method? Would it be better
+            // to move all this to that?
+            random = new Random();
             createPositionsArray();
             createStartingBoard();
+            NULLTILE.value = -1;
             tilesMoving = false;
         }
 
         // Creates and initializes array of positions coordinates
         private void createPositionsArray()
         {
-            positions = new Vector2[4, 4];
+            positions = new Vector2[NUM_ROWS, NUM_COLS];
             
-            for (int row = 0; row < 4; row++)
+            for (int row = 0; row < NUM_ROWS; row++)
             {
-                for (int col = 0; col < 4; col++)
+                for (int col = 0; col < NUM_COLS; col++)
                 {
                     //                                pixel border + tile width    
-                    positions[row, col] = new Vector2((2 * (col + 1)) + (100 * col), (2 * (row + 1)) + (100 * row));
+                    positions[col, row] = new Vector2((2 * (col + 1)) + (100 * col), (2 * (row + 1)) + (100 * row));
                 }
             }
         }
+
         // Creates tiles list and fills with 8 randomized tiles
         private void createStartingBoard()
         {
@@ -77,27 +89,31 @@ namespace Thing1
 
             
             //Start with 8 tiles
-            Random random = new Random();
             while (tiles.Count() < 8)
             {
-                int pos = random.Next(0, 16);
-                while (tiles.Any<Tile>(t => t.col + t.row * 4 == pos))
-                {
-                    pos = random.Next(0, 16);
-                }
-
-                Tile tile = new Tile();
-                tile.value = random.Next(0, 2);
-                tile.row = pos / 4;
-                tile.col = pos % 4;
-                tile.targetRow = tile.row;
-                tile.targetCol = tile.col;
-                tile.isMoving = false;
-                tile.currentPos = positions[tile.row, tile.col];
-                //Console.WriteLine("Tile " + tiles.Count() + ": (" + tile.row + "," + tile.col + ")"); //% DEBUG
-
-                tiles.Add(tile);
+                addNewTile();
             }
+        }
+
+        // Creates a new random tile and adds it to the list of tiles
+        private void addNewTile()
+        {
+            int pos = random.Next(0, 16);
+            while (tiles.Any<Tile>(t => t.col + t.row * NUM_ROWS == pos))
+            {
+                pos = random.Next(0, 16);
+            }
+
+            Tile tile = new Tile();
+            tile.value = random.Next(0, 2);
+            tile.row = pos / NUM_ROWS;
+            tile.col = pos % NUM_ROWS;
+            tile.targetRow = tile.row;
+            tile.targetCol = tile.col;
+            tile.isMoving = false;
+            tile.currentPos = positions[tile.col, tile.row];
+
+            tiles.Add(tile);
         }
 
         // LoadContent method
@@ -112,81 +128,136 @@ namespace Thing1
         {
             if (tilesMoving)
             {
-                //Console.WriteLine("Tiles moving...");
-                moveTiles(direction); 
+                moveTiles(); 
             }
             else if (direction != Dir.None)
             {
-                
                 tilesMoving = true;
-                //Console.WriteLine("Tiles not moving.");
                 
                 for (int i = 0; i < tiles.Count; i++ )
                 {
                     Tile temp = tiles[i];
-                    switch (direction)
-                    {
-                        case Dir.Up:
-                            temp.targetRow--;
-                            if (temp.targetRow < 0) temp.targetRow = 3;
-                            break;
-                        case Dir.Down:
-                            temp.targetRow = (temp.targetRow + 1) % 4;
-                            break;
-                        case Dir.Left:
-                            temp.targetCol--;
-                            if (temp.targetCol < 0) temp.targetCol = 3;
-                            break;
-                        case Dir.Right:
-                            temp.targetCol = (temp.targetCol + 1) % 4;
-                            break;
-                    }
-                    if (temp.targetCol == temp.col || temp.targetRow == temp.row)
-                        Console.WriteLine("*****************************************************************");
+                    
+                    Vector2 targetCoord = getTargetCoordinate(i, direction);
+                    temp.targetCol = (int)targetCoord.X;
+                    temp.targetRow = (int)targetCoord.Y;
                     temp.isMoving = true;
                     tiles[i] = temp;
                 }
             }
         }
 
-        private void moveTiles(Dir _direction)
+        // Calculates target row and col for a tile at given index. Takes into consideration other tiles (collapse)
+        private Vector2 getTargetCoordinate(int i, Dir dir)
         {
-            // Loops through tiles, for each moves the tile or marks it as done moving
+            int row = tiles[i].row;
+            int col = tiles[i].col;
+
+            List<Tile> tilesBefore;
+            switch (dir)
+            {
+                case Dir.Up:
+                    tilesBefore = tiles.FindAll(t => t.col == col && t.row <= row);
+                    tilesBefore.Sort((a, b) => b.row - a.row);
+                    row = 0 + countAfterCollapse(tilesBefore) - 1;
+                    break;
+                case Dir.Down:
+                    tilesBefore = tiles.FindAll(t => t.col == col && t.row >= row);
+                    tilesBefore.Sort((a, b) => a.row - b.row);
+                    row = NUM_ROWS - countAfterCollapse(tilesBefore);
+                    break;
+                case Dir.Left:
+                    tilesBefore = tiles.FindAll(t => t.row == row && t.col <= col);
+                    tilesBefore.Sort((a, b) => b.col - a.col);
+                    col = 0 + countAfterCollapse(tilesBefore) - 1;
+                    break;
+                case Dir.Right:
+                    tilesBefore = tiles.FindAll(t => t.row == row && t.col >= col);
+                    tilesBefore.Sort((a, b) => a.col - b.col);
+                    col = NUM_COLS - countAfterCollapse(tilesBefore);
+                    break;
+            }
+            
+            return new Vector2(col, row);
+        }
+
+        // Returns the number of tiles that will remain after all collapsable tiles in a subset are combined.
+        // Tiles will collapse if two tiles of the same value will be adjacent after the move.
+        private int countAfterCollapse(List<Tile> subset)
+        {
+            // GOOGLE: Example of list.Aggregate<>
+                        
+            int count = subset.Count;
+            for (int i = 0; i < subset.Count - 1; i++)
+            {
+                if (subset[i].value == subset[i + 1].value)
+                {
+                    count--;
+                    i++;
+                }
+            }
+            return count;
+        }
+
+        // Moves all tiles that are still moving one step towards their target coordinates
+        private void moveTiles()
+        {
+             // Loops through tiles, for each moves the tile or marks it as done moving
             for (int i = 0; i < tiles.Count; i++) 
             {
                 Tile temp = tiles[i];
+
                 if (temp.Equals(NULLTILE))
                     continue;
+                
                 //Console.WriteLine("Tile " + i + ": (" + temp.row + "," + temp.col + ") => (" + temp.targetRow + "," + temp.targetCol + "), @ (" 
                 //    + (int)temp.currentPos.Y / 100 + "," + (int)temp.currentPos.X / 100 + ")");
-                if (tiles[i].currentPos == positions[tiles[i].targetRow, tiles[i].targetCol])
+                // Tile done moving
+                if (tiles[i].currentPos == positions[tiles[i].targetCol, tiles[i].targetRow])
                 {
                     temp.col = temp.targetCol;
                     temp.row = temp.targetRow;
                     temp.isMoving = false;
 
-                    foreach (Tile t in tiles.FindAll(t => t.currentPos == temp.currentPos && !t.Equals(temp))) { 
+                    // Loops through list of tiles that the current tile collapses with (should always be just one tile)
+                    //NEEDSWORK: If it's just one, just use Find()/First()?
+                    /*foreach (Tile e in tiles.FindAll(t => (t.currentPos == temp.currentPos) && 
+                        (tiles.IndexOf(t) != i) && (temp.value == t.value))) {  
+                        //NEEDSWORK: Inefficient maybe. Does IndexOf() loop through them all? O.o
                         //NEEDSWORK: Should it skip ones that aren't done moving yet?
-                        //Console.WriteLine(t.currentPos.ToString() + " vs " + temp.currentPos.ToString());
                         
                         temp.value = (temp.value + 1) % colors.Length; 
-                        tiles[tiles.IndexOf(t)] = NULLTILE;
-
+                        tiles[tiles.IndexOf(e)] = NULLTILE;
+                    }*/
+                    int collapsedTile = tiles.FindIndex(t => (t.currentPos == temp.currentPos) &&
+                        (tiles.IndexOf(t) != i) && (temp.value == t.value));
+                    if (collapsedTile != -1)
+                    {
+                        temp.value = (temp.value + 1) % colors.Length;
+                        tiles[collapsedTile] = NULLTILE;
                     }
                 }
                 else
                 {
-                    //Console.WriteLine("Tile " + i + " moved");
-                    temp.currentPos += new Vector2((float)(tiles[i].targetRow - tiles[i].row) / 10.0f, 
-                        (float)(tiles[i].targetCol - tiles[i].col) / 10.0f);
+                    //NEEDSWORK: Make this faster, but not so fast that it doesn't end on the exact position
+                    Vector2 step = TILE_SPEED * new Vector2(tiles[i].targetCol - tiles[i].col, tiles[i].targetRow - tiles[i].row);
+                    temp.currentPos += step;
+                    Vector2 pxToGo = temp.currentPos - positions[tiles[i].targetCol, tiles[i].targetRow];
+
+                    
+                    if (pxToGo.Length() < step.Length())
+                    {
+                        temp.currentPos = positions[tiles[i].targetCol, tiles[i].targetRow];
+                        tiles[i] = temp; 
+                        i--;              // Shifts iteration back to current tile; works for 0th tile too
+                        continue;
+                    }
                 }
                 tiles[i] = temp;
             }
-            //Console.WriteLine("Done with loop");
-            tilesMoving = !tiles.TrueForAll(t => !t.isMoving);
-            //tiles.RemoveAll(t => t.Equals(NULLTILE));
+            tilesMoving = tiles.Any<Tile>(t => t.isMoving);
+            tiles.RemoveAll(t => t.Equals(NULLTILE));
             
-
         }
         // Draw method
         public void Draw(SpriteBatch spriteBatch, Vector2 offset)
