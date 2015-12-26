@@ -33,19 +33,19 @@ namespace Thing1
 
         #region Array of colors
         private Color[] colors = {   
-                             new Color(208,194,183), 
-                             new Color(180, 157, 139), 
-                             new Color(226, 82, 85),
-                             new Color(245, 160, 77),
-                             new Color(240, 225, 110),
-                             new Color(182, 230, 120),
-                             new Color(127, 206, 127),
-                             new Color(108, 181, 161),
-                             new Color(95, 154, 184),
-                             new Color(136, 136, 196),
-                             new Color(164, 124, 207),
-                             new Color(191, 138, 191),
-                             new Color(204, 125, 141)
+                             new Color(208, 194, 183),// Beige
+                             new Color(140, 117, 99), // Brown
+                             new Color(226, 82, 85),  // Red
+                             new Color(250, 150, 70), // Orange
+                             new Color(240, 225, 110),// Yellow
+                             new Color(182, 230, 120),// Light green
+                             new Color(127, 206, 127),// Green
+                             new Color(98, 161, 161), // Teal
+                             new Color(95, 124, 174), // Blue
+                             new Color(136, 136, 196),// Lavender
+                             new Color(164, 124, 207),// Orchid
+                             new Color(191, 138, 191),// Pink
+                             new Color(204, 125, 141) // Light red
                          };
         #endregion
 
@@ -65,6 +65,42 @@ namespace Thing1
             createStartingBoard();
             NULLTILE.value = -1;
             tilesMoving = false;
+        }
+
+        // Determines if the game is over, ie: board is full withn no moves possible
+        public Boolean isGameOver()
+        {
+            // There are definitely still moves if there is space
+            if (tiles.Count < 16)
+            {
+                return false;
+            }
+
+            // NEEDSWORK: There is probably a more efficient way to do this. This feels very
+            // brute force-y
+
+            Boolean anyMovesLeft = false;
+            for (Dir dir = Dir.Up; dir < Dir.Right; dir++)
+            {
+                Boolean movesLeftForDir = false;
+                //Console.WriteLine("Dir: " + dir); // DEBUG
+                foreach (Tile t in tiles)
+                {
+                    Vector2 targetCoord = getTargetCoordinate(t, dir);
+                    movesLeftForDir = movesLeftForDir || (targetCoord != new Vector2(t.targetCol, t.targetRow));
+                    //Console.WriteLine(movesLeftForDir); // DEBUG
+                    // Break early if a move was found
+                    if (movesLeftForDir)
+                        break;
+                }
+                anyMovesLeft = anyMovesLeft || movesLeftForDir;
+
+                // Break early if a move was found
+                if (anyMovesLeft)
+                    break;
+            }
+            //Console.WriteLine("About to return: " + anyMovesLeft); // DEBUG
+            return !anyMovesLeft;
         }
 
         // Creates and initializes array of positions coordinates
@@ -128,30 +164,43 @@ namespace Thing1
         {
             if (tilesMoving)
             {
-                moveTiles(); 
+                moveTiles();
+
+                //Add new tile if tiles are now done moving
+                if (!tilesMoving) 
+                {
+                    addNewTile(); 
+                }
+                    
             }
             else if (direction != Dir.None)
-            {
-                tilesMoving = true;
-                
+            {   
                 for (int i = 0; i < tiles.Count; i++ )
                 {
                     Tile temp = tiles[i];
                     
-                    Vector2 targetCoord = getTargetCoordinate(i, direction);
+                    Vector2 targetCoord = getTargetCoordinate(temp, direction);
+                    // Skip the tile if it won't be moving
+                    if (targetCoord == new Vector2(temp.targetCol, temp.targetRow))
+                    {
+                        continue;
+                    }
                     temp.targetCol = (int)targetCoord.X;
                     temp.targetRow = (int)targetCoord.Y;
                     temp.isMoving = true;
                     tiles[i] = temp;
                 }
+
+                tilesMoving = tiles.Any<Tile>(t => t.isMoving);
+                
             }
         }
 
-        // Calculates target row and col for a tile at given index. Takes into consideration other tiles (collapse)
-        private Vector2 getTargetCoordinate(int i, Dir dir)
+        // Calculates target row and col for a given tile. Takes into consideration other tiles (collapse)
+        private Vector2 getTargetCoordinate(Tile tile, Dir dir)
         {
-            int row = tiles[i].row;
-            int col = tiles[i].col;
+            int row = tile.row;
+            int col = tile.col;
 
             List<Tile> tilesBefore;
             switch (dir)
@@ -184,9 +233,7 @@ namespace Thing1
         // Returns the number of tiles that will remain after all collapsable tiles in a subset are combined.
         // Tiles will collapse if two tiles of the same value will be adjacent after the move.
         private int countAfterCollapse(List<Tile> subset)
-        {
-            // GOOGLE: Example of list.Aggregate<>
-                        
+        { 
             int count = subset.Count;
             for (int i = 0; i < subset.Count - 1; i++)
             {
@@ -205,6 +252,7 @@ namespace Thing1
              // Loops through tiles, for each moves the tile or marks it as done moving
             for (int i = 0; i < tiles.Count; i++) 
             {
+                // NEEDSWORK: Skip ones that don't need to move? 
                 Tile temp = tiles[i];
 
                 if (temp.Equals(NULLTILE))
@@ -263,13 +311,32 @@ namespace Thing1
         public void Draw(SpriteBatch spriteBatch, Vector2 offset)
         {
             //drawBoardDropShadow(spriteBatch, offset);
-
+            drawColorsKey(spriteBatch, offset);
             spriteBatch.Draw(imgBoard, offset, Color.White);
             foreach (var t in tiles) {
                 spriteBatch.Draw(imgTile, t.currentPos + offset, colors[t.value]);
             }
         }
 
+        private void drawColorsKey(SpriteBatch spriteBatch, Vector2 offset)
+        {
+            int padding = 3;
+            int totalWidth = 2 * (NUM_COLS + 1) + 100 * (NUM_COLS);
+            int widthPerSample = totalWidth / colors.Length;
+            int sampleSize = widthPerSample - padding;
+
+            int currentX = (totalWidth - widthPerSample * colors.Length + padding) / 2;
+            foreach (Color c in colors)
+            {
+                spriteBatch.Draw(imgTile, 
+                    new Rectangle(currentX + (int)offset.X, (int)offset.Y - sampleSize - 5, sampleSize, sampleSize),
+                    c);
+                currentX += widthPerSample;
+            }
+        }
+
+        // Draws a drop shadow for the board. NOTE: Looks bad due to transparency in
+        // board, so unused
         private void drawBoardDropShadow(SpriteBatch spriteBatch, Vector2 offset)
         {
             //spriteBatch.Draw(imgBoard., offset + new Vector2(2, 2), new Color(0, 0, 0, 32)); 
