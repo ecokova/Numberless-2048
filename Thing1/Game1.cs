@@ -39,7 +39,6 @@ namespace Thing1
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        Texture2D imgCat;
         Texture2D imgGameOver;
         Board board;
 
