@@ -27,9 +27,10 @@ c:\users\elena\documents\visual studio 2013\Projects\Thing1\Thing1\obj\x86\Debug
 c:\users\elena\documents\visual studio 2013\Projects\Thing1\Thing1\obj\x86\Debug\Thing1.pdb
 c:\users\elena\documents\visual studio 2013\Projects\Thing1\Thing1\obj\x86\Debug\Thing1.Properties.Resources.resources
 c:\users\elena\documents\visual studio 2013\Projects\Thing1\Thing1\obj\x86\Debug\Thing1.csproj.GenerateResource.Cache
-C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\cat.jpg
-C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\genericFont.spritefont
-C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\XMLFile1.xml
 C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\board.png
 C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\tile.png
 C:\Users\Elena\documents\visual studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Content\gameOverText.png
+C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Thing1.exe.manifest
+C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing1\Thing1\bin\Windows\Debug\Thing1.application
+C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing1\Thing1\obj\x86\Debug\Thing1.exe.manifest
+C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing1\Thing1\obj\x86\Debug\Thing1.application
