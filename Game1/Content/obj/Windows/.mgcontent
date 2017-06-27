@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Profile>Reach</Profile>
+  <Platform>Windows</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/board.png</File>
+    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/gameOverText.png</File>
+    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/newIcon.ico</File>
+    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/tile.png</File>
+    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/MainText.spritefont</File>
+  </SourceFiles>
+</SourceFileCollection>
