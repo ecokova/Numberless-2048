@@ -14,7 +14,7 @@ namespace Numberless_2048
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (var game = new Numberless_2048())
                 game.Run();
         }
     }

@@ -4,10 +4,10 @@
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/board.png</File>
-    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/gameOverText.png</File>
-    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/newIcon.ico</File>
-    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/tile.png</File>
-    <File>C:/Users/elena/documents/visual studio 2017/Projects/Game1/Game1/Content/MainText.spritefont</File>
+    <File>C:/Users/elena/Documents/Numberless-2048/Game1/Content/board.png</File>
+    <File>C:/Users/elena/Documents/Numberless-2048/Game1/Content/gameOverText.png</File>
+    <File>C:/Users/elena/Documents/Numberless-2048/Game1/Content/newIcon.ico</File>
+    <File>C:/Users/elena/Documents/Numberless-2048/Game1/Content/tile.png</File>
+    <File>C:/Users/elena/Documents/Numberless-2048/Game1/Content/MainText.spritefont</File>
   </SourceFiles>
 </SourceFileCollection>

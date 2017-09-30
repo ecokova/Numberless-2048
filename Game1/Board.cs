@@ -164,6 +164,7 @@ namespace Numberless_2048
             scoreFont = content.Load<SpriteFont>("MainText");
         }
 
+
         // Update method
         public void Update(Dir direction)
         {
@@ -199,6 +200,11 @@ namespace Numberless_2048
                 tilesMoving = tiles.Any<Tile>(t => t.isMoving);
 
             }
+        }
+
+        public int getScore()
+        {
+            return score;
         }
 
         // Calculates target row and col for a given tile. Takes into consideration other tiles (collapse)
@@ -333,7 +339,6 @@ namespace Numberless_2048
             Vector2 textPosition = new Vector2((int)(textMidPoint.X - textSize.X), (int)(textMidPoint.Y - textSize.Y));
             spriteBatch.DrawString(scoreFont, score.ToString(), textPosition + offset, colors[0]);
            
-
         }
 
         private void drawColorsKey(SpriteBatch spriteBatch, Vector2 offset)
